@@ -1,34 +1,28 @@
 import java.util.Vector;
 
 public class chess {
+
+    private static state state = new state();
+
 	public static void reset() {
 		// reset the state of the game / your internal variables - note that this function is highly dependent on your implementation
+		state.init();
 	}
 	
 	public static String boardGet() {
 		// return the state of the game - one example is given below - note that the state has exactly 40 or 41 characters
-		
-		String strOut = "";
-		
-		strOut += "1 W\n";
-		strOut += "kqbnr\n";
-		strOut += "ppppp\n";
-		strOut += ".....\n";
-		strOut += ".....\n";
-		strOut += "PPPPP\n";
-		strOut += "RNBQK\n";
-		
-		return strOut;
+		return state.print();
 	}
 	
 	public static void boardSet(String strIn) {
 		// read the state of the game from the provided argument and set your internal variables accordingly - note that the state has exactly 40 or 41 characters
+		state.read(strIn);
 	}
 	
 	public static char winner() {
 		// determine the winner of the current state of the game and return '?' or '=' or 'W' or 'B' - note that we are returning a character and not a string
 		
-		return '?';
+		return state.winner();
 	}
 	
 	public static boolean isValid(int intX, int intY) {
@@ -54,19 +48,19 @@ public class chess {
 	public static boolean isEnemy(char charPiece) {
 		// with reference to the state of the game, return whether the provided argument is a piece from the side not on move - note that we could but should not use the other is() functions in here but probably
 		
-		return false;
+		return state.isEnemy(charPiece);
 	}
 	
 	public static boolean isOwn(char charPiece) {
 		// with reference to the state of the game, return whether the provided argument is a piece from the side on move - note that we could but should not use the other is() functions in here but probably
 		
-		return false;
+		return state.isOwn(charPiece);
 	}
 	
 	public static boolean isNothing(char charPiece) {
 		// return whether the provided argument is not a piece / is an empty field - note that we could but should not use the other is() functions in here but probably
 		
-		return false;
+		return (charPiece == '.');
 	}
 	
 	public static int eval() {

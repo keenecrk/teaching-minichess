@@ -1,6 +1,6 @@
 public class main {
 	public static int intZeromq = 54361; // CHANGE THIS - OPTIONAL
-	public static String strName = "YOUR NAME"; // CHANGE THIS - REQUIRED
+	public static String strName = "ChrisKeene"; // CHANGE THIS - REQUIRED
 	
 	public static void main(String[] args) {
 		{
