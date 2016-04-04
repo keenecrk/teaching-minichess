@@ -2,7 +2,7 @@ import java.util.Vector;
 
 public class chess {
 
-    private static state state = new state();
+    private static State state = new State();
 
 	public static void reset() {
 		// reset the state of the game / your internal variables - note that this function is highly dependent on your implementation
@@ -60,7 +60,7 @@ public class chess {
 	public static boolean isNothing(char charPiece) {
 		// return whether the provided argument is not a piece / is an empty field - note that we could but should not use the other is() functions in here but probably
 		
-		return (charPiece == '.');
+		return state.isNothing(charPiece);
 	}
 	
 	public static int eval() {
