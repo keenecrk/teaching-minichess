@@ -24,7 +24,7 @@ def zeromq_start():
 		jsonIn = None
 		jsonOut = {}
 		
-		jsonIn = json.loads(socketHandle.recv())
+		jsonIn = json.loads(socketHandle.recv().decode())
 		
 		if jsonIn["strFunction"] == "ping":
 			jsonOut["strOut"] = main_strName
@@ -92,7 +92,7 @@ def zeromq_start():
 		elif jsonIn["strFunction"] == "chess_undo":
 			chess_undo()
 		
-		socketHandle.send(json.dumps(jsonOut))
+		socketHandle.send_string(json.dumps(jsonOut))
 		
 		jsonIn = None
 		jsonOut = None
