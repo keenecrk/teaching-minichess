@@ -66,7 +66,7 @@ public class chess {
 	public static int eval() {
 		// with reference to the state of the game, return the the evaluation score of the side on move - note that positive means an advantage while negative means a disadvantage
 		
-		return 0;
+		return state.eval();
 	}
 	
 	public static Vector<String> moves() {

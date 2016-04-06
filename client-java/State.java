@@ -7,6 +7,13 @@ public class State {
     private int currentTurn = 1;
     private char whoseTurn = 'W';
     
+    public static final int PAWN_VALUE = 100;
+    public static final int KNIGHT_VALUE = 300;
+    public static final int BISHOP_VALUE = 300;
+    public static final int ROOK_VALUE = 500;
+    public static final int QUEEN_VALUE = 900;
+    public static final int KING_VALUE = 10000;
+    
     public String print() { 
         String outString = "";
         outString += Integer.toString(currentTurn) + " ";
@@ -58,8 +65,8 @@ public class State {
         if(currentTurn > 40) {
             whoWon = '=';
         }
-        else {
-            boolean whiteFound = false;
+        
+        boolean whiteFound = false;
             boolean blackFound = false;
             for(int i = 0; i < 6; i++) {
                 for(int j = 0; j < 5; j++) {
@@ -78,7 +85,6 @@ public class State {
             else if(!whiteFound) {
                 whoWon = 'B';
             }
-        }
         
         return whoWon;
     }
@@ -94,6 +100,68 @@ public class State {
     public boolean isEnemy(char charPiece) {
         char owner = getOwner(charPiece);
         return (owner != '?' && owner != whoseTurn);
+    }
+    
+    public int eval() {
+        int value = 0;
+        int white, black;
+        
+        if(whoseTurn == 'W') {
+            white = 1;
+            black = -1;
+        }
+        else {
+            white = -1;
+            black = 1;
+        }
+        
+        for(int i = 0; i < 6; i++) {
+            for(int j = 0; j < 5; j++) {
+                switch (board[i][j]) {
+                    case 'p':
+                        value += (PAWN_VALUE * black);
+                        break;
+                    case 'P':
+                        value += (PAWN_VALUE * white);
+                        break;
+                    case 'n':
+                        value += (KNIGHT_VALUE * black);
+                        break;
+                    case 'N':
+                        value += (KNIGHT_VALUE * white);
+                        break;
+                    case 'b':
+                        value += (BISHOP_VALUE * black);
+                        break;
+                    case 'B':
+                        value += (BISHOP_VALUE * white);
+                        break;
+                    case 'r':
+                        value += (ROOK_VALUE * black);
+                        break;
+                    case 'R':
+                        value += (ROOK_VALUE * white);
+                        break;
+                    case 'q':
+                        value += (QUEEN_VALUE * black);
+                        break;
+                    case 'Q':
+                        value += (QUEEN_VALUE * white);
+                        break;
+                    case 'k':
+                        value += (KING_VALUE * black);
+                        break;
+                    case 'K':
+                        value += (KING_VALUE * white);
+                        break;
+                    default:
+                        break;
+                    
+                }
+            }
+        }
+        
+        return value;
     }
     
     private char getOwner(char charPiece) {
