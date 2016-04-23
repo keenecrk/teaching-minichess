@@ -72,17 +72,7 @@ public class chess {
 	public static Vector<String> moves() {
 		// with reference to the state of the game and return the possible moves - one example is given below - note that a move has exactly 6 characters
 		
-		Vector<String> strOut = new Vector<String>();
-		
-		strOut.add("a2-a3\n");
-		strOut.add("b2-b3\n");
-		strOut.add("c2-c3\n");
-		strOut.add("d2-d3\n");
-		strOut.add("e2-e3\n");
-		strOut.add("b1-a3\n");
-		strOut.add("b1-c3\n");
-		
-		return strOut;
+		return state.moveGen();
 	}
 	
 	public static Vector<String> movesShuffled() {
@@ -99,6 +89,8 @@ public class chess {
 	
 	public static void move(String charIn) {
 		// perform the supplied move (for example "a5-a4\n") and update the state of the game / your internal variables accordingly - note that it advised to do a sanity check of the supplied move
+		
+		state.move(charIn);
 	}
 	
 	public static String moveRandom() {

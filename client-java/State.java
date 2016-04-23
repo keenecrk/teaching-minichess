@@ -1,4 +1,4 @@
-
+import java.util.Vector;
 
 
 public class State {
@@ -13,6 +13,10 @@ public class State {
     public static final int ROOK_VALUE = 500;
     public static final int QUEEN_VALUE = 900;
     public static final int KING_VALUE = 10000;
+    
+    public static final int CAPTURE_FALSE = 0;
+    public static final int CAPTURE_TRUE = 1;
+    public static final int CAPTURE_ONLY = 2;
     
     public String print() { 
         String outString = "";
@@ -164,6 +168,42 @@ public class State {
         return value;
     }
     
+    public void move(String in) {
+        move(new Move(in));
+    }
+    
+    public void move(Move m) {
+        int fromX = m.getFromSquare().getX();
+        int fromY = m.getFromSquare().getY();
+        int toX = m.getToSquare().getX();
+        int toY = m.getToSquare().getY();
+        
+        char from = board[fromY][fromX];
+        char to = board[toY][toX];
+        
+        if(!isOwn(from) || isOwn(to)) {
+            //throw exception
+        }
+        
+        board[toY][toX] = from;
+        board[fromY][fromX] = '.';
+        
+        if(from == 'P' && toY == 0) {
+            board[toY][toX] = 'Q';
+        }
+        else if(from == 'p' && toY == 5) {
+            board[toY][toX] = 'q';
+        }
+        
+        if(whoseTurn == 'W') {
+            whoseTurn = 'B';
+        }
+        else {
+            whoseTurn = 'W';
+            currentTurn++;
+        }
+    }
+    
     private char getOwner(char charPiece) {
         char owner = '?';
         if(charPiece >= 'a' && charPiece <= 'z') {
@@ -174,6 +214,136 @@ public class State {
         }
         
         return owner;
+    }
+    
+    public Vector<String> moveGen() {
+        Vector<String> moves = new Vector<String>();
+    
+        for(int i = 0; i < 6; i++) {
+            for(int j = 0; j < 5; j++) {
+                char piece = board[i][j];
+                if(isOwn(piece)) {
+                    moves.addAll(moveList(j, i, piece));
+                }
+            }
+        }
+        
+        return moves;
+    }
+    
+    private static String getMoveString(int fromX, int fromY, int toX, int toY) {
+        StringBuffer sb = new StringBuffer(6);
+        
+        sb.append(xToChar(fromX));
+        sb.append(yToChar(fromY));
+        sb.append('-');
+        sb.append(xToChar(toX));
+        sb.append(yToChar(toY));
+        sb.append('\n');
+        
+        return sb.toString();
+    }
+    
+    private static char xToChar(int x) {
+        return (char)('a' + x);
+    }
+    
+    private static char yToChar(int y) {
+        return (char)('0' + (6 - y));
+    }
+    
+    private Vector<String> moveScan(int x0, int y0, int dx, int dy,
+                                    int capture, boolean stopShort) {
+        Vector<String> moves = new Vector<String>();
+        int x = x0;
+        int y = y0;
+        boolean stop = stopShort;
+        
+        do {
+            x += dx;
+            y += dy;
+            if(!chess.isValid(x, y)) {
+                break;
+            } 
+            char piece = board[y][x];
+            if(!isNothing(piece)) {
+                if(isOwn(piece)) {
+                    break;
+                }
+                if(capture == CAPTURE_FALSE) {
+                    break;
+                }
+                stop = true;
+            }
+            else if(capture == CAPTURE_ONLY) {
+                break;
+            }
+            
+            moves.add(getMoveString(x0, y0, x, y));               
+            
+        } while(!stop);
+        
+        return moves;
+    }
+    
+    private Vector<String> symScan(int x, int y, int dx, int dy, int capture, boolean stopShort) {
+        Vector<String> moves = new Vector<String>();
+        int ddx = dx;
+        int ddy = dy;
+        int temp;
+        
+        for(int i = 0; i < 4; i++) {
+            moves.addAll(moveScan(x, y, ddx, ddy, capture, stopShort));
+            temp = ddy;
+            ddy = ddx;
+            ddx = temp;
+            ddy *= -1;
+        }
+        return moves;
+    }
+    
+    private Vector<String> moveList(int x, int y, char piece) {
+        Vector<String> moves = new Vector<String>();
+        int capture = CAPTURE_TRUE;
+        boolean stopShort = false;
+        int dir = -1;
+        
+        switch (piece) {
+            case 'k':
+            case 'K':
+                stopShort = true; 
+            case 'q':
+            case 'Q':
+                moves.addAll(symScan(x, y, 0, 1, capture, stopShort));
+                moves.addAll(symScan(x, y, 1, 1, capture, stopShort));
+                break;
+            case 'b':
+            case 'B':
+                stopShort = true;
+                capture = CAPTURE_FALSE;
+            case 'r':
+            case 'R':
+                moves.addAll(symScan(x, y, 0, 1, capture, stopShort));
+                if(piece == 'b' || piece == 'B') {
+                    capture = CAPTURE_TRUE;
+                    stopShort = false;
+                    moves.addAll(symScan(x, y, 1, 1, capture, stopShort));
+                }
+                break;
+            case 'n':
+            case 'N':
+                moves.addAll(symScan(x, y, 1, 2, capture, true));
+                moves.addAll(symScan(x, y, -1, 2, capture, true));
+                break;
+            case 'p':
+                dir = 1;
+            case 'P':
+                moves.addAll(moveScan(x, y, -1, dir, CAPTURE_ONLY, true));
+                moves.addAll(moveScan(x, y, 1, dir, CAPTURE_ONLY, true));
+                moves.addAll(moveScan(x, y, 0, dir, CAPTURE_FALSE, true));
+        }
+        
+        return moves;
     }
 
 }
