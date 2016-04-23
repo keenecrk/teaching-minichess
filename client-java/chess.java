@@ -1,8 +1,12 @@
 import java.util.Vector;
+import java.util.Stack;
+import java.util.Collections;
+import java.util.TreeMap;
 
 public class chess {
 
     private static State state = new State();
+    private static Stack<State> statesStack = new Stack<State>();
 
 	public static void reset() {
 		// reset the state of the game / your internal variables - note that this function is highly dependent on your implementation
@@ -78,18 +82,45 @@ public class chess {
 	public static Vector<String> movesShuffled() {
 		// with reference to the state of the game, determine the possible moves and shuffle them before returning them - note that you can call the chess.moves() function in here
 		
-		return new Vector<String>();
+		Vector<String> moves = moves();
+		Collections.shuffle(moves);
+		return moves;
 	}
 	
 	public static Vector<String> movesEvaluated() {
 		// with reference to the state of the game, determine the possible moves and sort them in order of an increasing evaluation score before returning them - note that you can call the chess.movesShuffled() function in here
 		
-		return new Vector<String>();
+		Vector<String> moves = movesShuffled();
+		TreeMap<Integer, Vector<String>> sortedMoves = new TreeMap<Integer, Vector<String>>();
+		
+		for(String move : moves) {
+		    move(move);
+		    int score = eval();
+		    if(sortedMoves.containsKey(score)) {
+		        sortedMoves.get(score).add(move);
+		    }
+		    else {
+		        Vector<String> values = new Vector<String>();
+		        values.add(move);
+		        sortedMoves.put(score, values);
+		    }
+		    undo();
+		}
+		
+		moves.clear();
+		
+		for(Vector<String> v : sortedMoves.values()) {
+		    moves.addAll(v);
+		}
+		
+		return moves;
 	}
 	
 	public static void move(String charIn) {
 		// perform the supplied move (for example "a5-a4\n") and update the state of the game / your internal variables accordingly - note that it advised to do a sanity check of the supplied move
-		
+		State newState = new State();
+		newState.read(state.print());
+		statesStack.push(newState);
 		state.move(charIn);
 	}
 	
@@ -119,5 +150,6 @@ public class chess {
 	
 	public static void undo() {
 		// undo the last move and update the state of the game / your internal variables accordingly - note that you need to maintain an internal variable that keeps track of the previous history for this
+		state = statesStack.pop();
 	}
 }
