@@ -127,13 +127,17 @@ public class chess {
 	public static String moveRandom() {
 		// perform a random move and return it - one example output is given below - note that you can call the chess.movesShuffled() function as well as the chess.move() function in here
 		
-		return "a2-a3\n";
+		String move = movesShuffled().firstElement();
+		move(move);
+		return move;
 	}
 	
 	public static String moveGreedy() {
 		// perform a greedy move and return it - one example output is given below - note that you can call the chess.movesEvaluated() function as well as the chess.move() function in here
 		
-		return "a2-a3\n";
+		String move = movesEvaluated().firstElement();
+		move(move);
+		return move;
 	}
 	
 	public static String moveNegamax(int intDepth, int intDuration) {
