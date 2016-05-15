@@ -2,6 +2,7 @@ import java.util.Vector;
 import java.util.Stack;
 import java.util.Collections;
 import java.util.TreeMap;
+import java.util.Random;
 
 public class chess {
 
@@ -83,7 +84,7 @@ public class chess {
 		// with reference to the state of the game, determine the possible moves and shuffle them before returning them - note that you can call the chess.moves() function in here
 		
 		Vector<String> moves = moves();
-		Collections.shuffle(moves);
+		Collections.shuffle(moves, new Random());
 		return moves;
 	}
 	
@@ -159,7 +160,7 @@ public class chess {
 		    }
 		}
 		
-		move(best);m,l
+		move(best);
 		return best;
 	}
 	
