@@ -6,6 +6,9 @@ import java.util.Random;
 
 public class chess {
 
+
+    public static final int BIG_NUMBER = 100000;
+
     private static State state = new State();
     private static Stack<State> statesStack = new Stack<State>();
 
@@ -146,7 +149,7 @@ public class chess {
 		
 		Vector<String> moves = movesShuffled();
 		String best = "";
-		int score = -100000;
+		int score = -BIG_NUMBER;
 		int temp = 0;
 		
 		for(String move : moves) {
@@ -167,7 +170,25 @@ public class chess {
 	public static String moveAlphabeta(int intDepth, int intDuration) {
 		// perform a alphabeta move and return it - one example output is given below - note that you can call the the other functions in here
 		
-		return "a2-a3\n";
+		Vector<String> moves = movesEvaluated();
+		String best = "";
+		int alpha = -BIG_NUMBER;
+		int beta = BIG_NUMBER;
+		int temp = 0;
+		
+		for(String move: moves) {
+		    move(move);
+		    temp = -alphabeta(intDepth - 1, - beta, -alpha);
+		    undo();
+		    
+		    if(temp > alpha) {
+		        best = move;
+		        alpha = temp;
+		    }
+		}
+		
+		move(best);
+		return best;
 	}
 	
 	public static void undo() {
@@ -176,11 +197,12 @@ public class chess {
 	}
 	
 	private static int negamax(int depth) {
+	
 	    if((depth == 0) || (winner() != '?')) {
 	        return eval();
 	    }
 	    
-	    int score = -100000;
+	    int score = -BIG_NUMBER;
 	    
 	    Vector<String> moves = moves();
 	    
@@ -191,5 +213,30 @@ public class chess {
 	    }
 	    
 	    return score;
+	}
+	
+	private static int alphabeta(int depth, int alpha, int beta) {
+	
+	    if((depth == 0) || (winner() != '?')) {
+	        return eval();
+	    }
+	    
+	    int score = -BIG_NUMBER;
+	    
+	    Vector<String> moves = movesEvaluated();
+	    
+	    for(String move : moves) {
+	        move(move);
+	        score = Math.max(score, -alphabeta(depth - 1, -beta, -alpha));
+	        undo();
+	        
+	        alpha = Math.max(alpha, score);
+	        
+	        if(alpha >= beta) {
+	            break;
+	        }
+	    }
+	    
+        return score;	    
 	}
 }
