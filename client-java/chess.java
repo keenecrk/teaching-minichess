@@ -143,7 +143,24 @@ public class chess {
 	public static String moveNegamax(int intDepth, int intDuration) {
 		// perform a negamax move and return it - one example output is given below - note that you can call the the other functions in here
 		
-		return "a2-a3\n";
+		Vector<String> moves = movesShuffled();
+		String best = "";
+		int score = -100000;
+		int temp = 0;
+		
+		for(String move : moves) {
+		    move(move);
+		    temp = -negamax(intDepth -1);
+		    undo();
+		    
+		    if(temp > score) {
+		        best = move;
+		        score = temp;
+		    }
+		}
+		
+		move(best);m,l
+		return best;
 	}
 	
 	public static String moveAlphabeta(int intDepth, int intDuration) {
@@ -155,5 +172,23 @@ public class chess {
 	public static void undo() {
 		// undo the last move and update the state of the game / your internal variables accordingly - note that you need to maintain an internal variable that keeps track of the previous history for this
 		state = statesStack.pop();
+	}
+	
+	private static int negamax(int depth) {
+	    if((depth == 0) || (winner() != '?')) {
+	        return eval();
+	    }
+	    
+	    int score = -100000;
+	    
+	    Vector<String> moves = moves();
+	    
+	    for(String move : moves) {
+	        move(move);
+	        score = Math.max(score, -negamax(depth - 1));
+	        undo();
+	    }
+	    
+	    return score;
 	}
 }
