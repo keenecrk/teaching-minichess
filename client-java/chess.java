@@ -3,6 +3,7 @@ import java.util.Stack;
 import java.util.Collections;
 import java.util.TreeMap;
 import java.util.Random;
+import java.time.Instant;
 
 public class chess {
 
@@ -122,10 +123,11 @@ public class chess {
 	
 	public static void move(String charIn) {
 		// perform the supplied move (for example "a5-a4\n") and update the state of the game / your internal variables accordingly - note that it advised to do a sanity check of the supplied move
-		State newState = new State();
-		newState.read(state.print());
-		statesStack.push(newState);
-		state.move(charIn);
+		if(winner() == '?') {
+		    State newState = new State(state);
+		    statesStack.push(newState);
+		    state.move(charIn);
+		}		
 	}
 	
 	public static String moveRandom() {
@@ -176,14 +178,47 @@ public class chess {
 		int beta = BIG_NUMBER;
 		int temp = 0;
 		
-		for(String move: moves) {
-		    move(move);
-		    temp = -alphabeta(intDepth - 1, - beta, -alpha);
-		    undo();
+		if(intDepth > 0) {
+		    for(String move: moves) {
+		        move(move);
+		        temp = -alphabeta(intDepth - 1, - beta, -alpha);
+		        undo();
 		    
-		    if(temp > alpha) {
-		        best = move;
-		        alpha = temp;
+		        if(temp > alpha) {
+		            best = move;
+		            alpha = temp;
+		        }
+		    }
+		}
+		else {
+		    long startTime = Instant.now().toEpochMilli();
+		    long endTime = startTime + (intDuration / state.turnsLeft());
+		    
+		    int depth = 1;
+		    while(true) {
+		        best = "";
+		        alpha = -BIG_NUMBER;
+		        temp = 0;
+		        
+		        long startIter = Instant.now().toEpochMilli();
+		        
+		        for(String move : moves) {
+		            move(move);
+		            temp = -alphabeta(depth - 1, -beta, -alpha);
+		            undo();
+		            
+		            if(temp > alpha) {
+		                best = move;
+		                alpha = temp;
+		            }
+		        }
+		        
+		        long endIter = Instant.now().toEpochMilli();
+		        if(endIter + 10 * (endIter - startIter) > endTime) {
+		            break;
+		        }
+		        
+		        depth++;
 		    }
 		}
 		

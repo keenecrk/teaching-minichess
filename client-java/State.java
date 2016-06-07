@@ -6,6 +6,8 @@ public class State {
     private char[][] board = new char[6][5];
     private int currentTurn = 1;
     private char whoseTurn = 'W';
+    private int evalScore = 0;
+    private char winner = '?';
     
     public static final int PAWN_VALUE = 100;
     public static final int KNIGHT_VALUE = 300;
@@ -17,6 +19,22 @@ public class State {
     public static final int CAPTURE_FALSE = 0;
     public static final int CAPTURE_TRUE = 1;
     public static final int CAPTURE_ONLY = 2;
+    
+    public State() {
+        //Empty default constructor
+    }
+    
+    public State(State s) {
+        this.currentTurn = s.currentTurn;
+        this.whoseTurn = s.whoseTurn;
+        this.evalScore = s.evalScore;
+        
+        for(int i = 0; i < 6; i++) {
+            for(int j = 0; j < 5; j++) {
+                this.board[i][j] = s.board[i][j];
+            }
+        }
+    }
     
     public String print() { 
         String outString = "";
@@ -33,6 +51,10 @@ public class State {
     }
     
     public void read(String initString) {
+        boolean hasWhiteKing = false;
+        boolean hasBlackKing = false;
+        winner = '?';
+        
         int n = initString.indexOf(" ");
         currentTurn = Integer.parseInt(initString.substring(0, n));
         n++;
@@ -43,14 +65,36 @@ public class State {
                 if(initString.charAt(n) == '\n') {
                     n++;
                 }
-                board[i][j] = initString.charAt(n++);
+                char piece = initString.charAt(n++);
+                board[i][j] = piece;
+                addPiece(piece);
+                if(piece == 'k') {
+                    hasBlackKing = true;
+                }
+                else if(piece == 'K') {
+                    hasWhiteKing = true;
+                }
             }
+        }
+        
+        if(!hasWhiteKing) {
+            evalScore = -10000;
+            winner = 'B';
+        }
+        else if (!hasBlackKing) {
+            evalScore = 10000;
+            winner = 'W';
+        }
+        else if (currentTurn > 40) {
+            winner = '=';
         }
     }
     
     public void init() {
         currentTurn = 1;
         whoseTurn = 'W';
+        evalScore = 0;
+        winner = '?';
         
         char[][] newBoard = {
             {'k', 'q', 'b', 'n', 'r'},
@@ -64,33 +108,12 @@ public class State {
         board = newBoard;
     }
     
+    public int turnsLeft() {
+        return 41 - currentTurn;
+    }
+    
     public char winner() {
-        char whoWon = '?';
-        if(currentTurn > 40) {
-            whoWon = '=';
-        }
-        
-        boolean whiteFound = false;
-            boolean blackFound = false;
-            for(int i = 0; i < 6; i++) {
-                for(int j = 0; j < 5; j++) {
-                    char piece = board[i][j];
-                    if(piece == 'k') {
-                        blackFound = true;
-                    }
-                    else if(piece == 'K') {
-                        whiteFound = true;
-                    }
-                }
-            }
-            if(!blackFound) {
-                whoWon = 'W';
-            }
-            else if(!whiteFound) {
-                whoWon = 'B';
-            }
-        
-        return whoWon;
+        return this.winner;
     }
     
     public boolean isNothing(char charPiece) {
@@ -107,65 +130,12 @@ public class State {
     }
     
     public int eval() {
-        int value = 0;
-        int white, black;
-        
         if(whoseTurn == 'W') {
-            white = 1;
-            black = -1;
+            return evalScore;
         }
         else {
-            white = -1;
-            black = 1;
+            return -evalScore;
         }
-        
-        for(int i = 0; i < 6; i++) {
-            for(int j = 0; j < 5; j++) {
-                switch (board[i][j]) {
-                    case 'p':
-                        value += (PAWN_VALUE * black);
-                        break;
-                    case 'P':
-                        value += (PAWN_VALUE * white);
-                        break;
-                    case 'n':
-                        value += (KNIGHT_VALUE * black);
-                        break;
-                    case 'N':
-                        value += (KNIGHT_VALUE * white);
-                        break;
-                    case 'b':
-                        value += (BISHOP_VALUE * black);
-                        break;
-                    case 'B':
-                        value += (BISHOP_VALUE * white);
-                        break;
-                    case 'r':
-                        value += (ROOK_VALUE * black);
-                        break;
-                    case 'R':
-                        value += (ROOK_VALUE * white);
-                        break;
-                    case 'q':
-                        value += (QUEEN_VALUE * black);
-                        break;
-                    case 'Q':
-                        value += (QUEEN_VALUE * white);
-                        break;
-                    case 'k':
-                        value += (KING_VALUE * black);
-                        break;
-                    case 'K':
-                        value += (KING_VALUE * white);
-                        break;
-                    default:
-                        break;
-                    
-                }
-            }
-        }
-        
-        return value;
     }
     
     public void move(String in) {
@@ -185,14 +155,20 @@ public class State {
             //throw exception
         }
         
+        if(!isNothing(to)) {
+            capture(to);
+        }
+        
         board[toY][toX] = from;
         board[fromY][fromX] = '.';
         
         if(from == 'P' && toY == 0) {
             board[toY][toX] = 'Q';
+            evalScore += (QUEEN_VALUE - PAWN_VALUE);
         }
         else if(from == 'p' && toY == 5) {
             board[toY][toX] = 'q';
+            evalScore -= (QUEEN_VALUE - PAWN_VALUE);
         }
         
         if(whoseTurn == 'W') {
@@ -201,6 +177,94 @@ public class State {
         else {
             whoseTurn = 'W';
             currentTurn++;
+            if(currentTurn > 40 && winner == '?') {
+                winner = '=';
+                evalScore = 0;
+            }
+        }
+    }
+    
+    private void capture(char piece) {
+        switch(piece) {
+            case 'p':
+                evalScore += PAWN_VALUE;
+                break;
+            case 'P':
+                evalScore -= PAWN_VALUE;
+                break;
+            case 'n':
+                evalScore += KNIGHT_VALUE;
+                break;
+            case 'N':
+                evalScore -= KNIGHT_VALUE;
+                break;
+            case 'b':
+                evalScore += BISHOP_VALUE;
+                break;
+            case 'B':
+                evalScore -= BISHOP_VALUE;
+                break;
+            case 'r':
+                evalScore += ROOK_VALUE;
+                break;
+            case 'R':
+                evalScore -= ROOK_VALUE;
+                break;
+            case 'q':
+                evalScore += QUEEN_VALUE;
+                break;
+            case 'Q':
+                evalScore -= QUEEN_VALUE;
+                break;
+            case 'k':
+                evalScore = 10000;
+                winner = 'W';
+                break;
+            case 'K':
+                evalScore = -10000;
+                winner = 'B';
+                break;
+        }
+    }
+    
+    private void addPiece(char piece) {
+        switch(piece) {
+            case 'p':
+                evalScore -= PAWN_VALUE;
+                break;
+            case 'P':
+                evalScore += PAWN_VALUE;
+                break;
+            case 'n':
+                evalScore -= KNIGHT_VALUE;
+                break;
+            case 'N':
+                evalScore += KNIGHT_VALUE;
+                break;
+            case 'b':
+                evalScore -= BISHOP_VALUE;
+                break;
+            case 'B':
+                evalScore += BISHOP_VALUE;
+                break;
+            case 'r':
+                evalScore -= ROOK_VALUE;
+                break;
+            case 'R':
+                evalScore += ROOK_VALUE;
+                break;
+            case 'q':
+                evalScore -= QUEEN_VALUE;
+                break;
+            case 'Q':
+                evalScore += QUEEN_VALUE;
+                break;
+            case 'k':
+                evalScore -= KING_VALUE;
+                break;
+            case 'K':
+                evalScore += KING_VALUE;
+                break;
         }
     }
     
